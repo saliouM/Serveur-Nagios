@@ -87,7 +87,7 @@ sudo make install-webconf
 ```bash
 cd ..
 sudo cp /chemin/vers/le/fichier/nagios-plugins-2.4.8.tar.gz /home/nagios/download/
-sudo tar xvzf nagios-plugins-2.4.8.tar.gz
+sudo tar -zxvf nagios-plugins-2.4.8.tar.gz
 cd nagios-plugins-2.4.8
 sudo ./configure --with-nagios-user=nagios --with-nagios-group=nagcmd --with-openssl=/usr/bin/openssl
 sudo make all
