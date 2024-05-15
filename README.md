@@ -48,6 +48,7 @@ sudo apt-get install snmp snmpd libnet-snmp-perl libsnmp-perl
 sudo apt-get install libgd-dev libpng-dev
 sudo apt-get install dnsutils fping
 sudo apt-get install openssh-server
+sudo apt install libssl-dev
 ```
 
 ## Étape 3 : Création d'un utilisateur et d'un groupe pour Nagios
