@@ -18,6 +18,7 @@ sudo apt-get install snmp snmpd libnet-snmp-perl libsnmp-perl
 sudo apt-get install libgd-dev libpng-dev
 sudo apt-get install dnsutils fping
 sudo apt-get install openssh-server
+sudo apt install libssl-dev
 
 sudo useradd -m -s /bin/bash nagios
 sudo groupadd nagcmd
