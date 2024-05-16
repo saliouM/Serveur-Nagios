@@ -125,6 +125,32 @@ sudo nano /etc/apache2/httpd.conf
 
 Collez le script.
 
+```bash
+ScriptAlias /nagios/cgi-bin /usr/local/nagios/sbin
+<Directory "/usr/local/nagios/sbin">
+Options ExecCGI
+AllowOverride None
+Order allow,deny
+Allow from all
+AuthName "Nagios Access"
+AuthType Basic
+AuthUserFile /usr/local/nagios/etc/htpasswd.users
+Require valid-user
+</Directory>
+Alias /nagios /usr/local/nagios/share
+<Directory "/usr/local/nagios/share">
+Options None
+AllowOverride None
+Order allow,deny
+Allow from all
+AuthName "Nagios Access"
+AuthType Basic
+AuthUserFile /usr/local/nagios/etc/htpasswd.users
+Require valid-user
+</Directory>
+```
+
+
 E- Redémarrez le serveur Apache:
 
 ```bash
@@ -132,6 +158,11 @@ sudo a2enmod cgi
 sudo systemctl restart apache2
 sudo systemctl start nagios
 sudo systemctl enable nagios
+```
+
+## creer un login nagios
+```bash
+htpasswd /usr/local/nagios/etc/htpasswd.users nagios
 ```
 
 ## Étape 7 : Vérification de l'installation et changement des droits utilisateurs
@@ -168,6 +199,8 @@ sudo nano /etc/init.d/ndo2db
 ```
 
 Copiez-collez le script et enregistrez. Ajoutez le daemon au démarrage.
+
+
 
 ```bash
 sudo update-rc.d ndo2db defaults
