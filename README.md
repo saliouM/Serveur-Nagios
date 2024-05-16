@@ -198,9 +198,154 @@ sudo chown nagios:nagios /usr/local/nagios/bin/ndo*
 sudo nano /etc/init.d/ndo2db
 ```
 
-Copiez-collez le script et enregistrez. Ajoutez le daemon au démarrage.
+## Copiez-collez le script et enregistrez. Ajoutez le daemon au démarrage.
 
+```
+#!/bin/sh
+#
+#
+# chkconfig: 345 99 01
+# description: Nagios to mysql
+#
+# Author : Gaëtan Lucas
+# Realase : 07/02/08
+# Version : 0.1 b
+# File : ndo2db
+# Description: Starts and stops the Ndo2db daemon
+# used to provide network services status in a database.
+#
+status_ndo ()
+{
+if ps -p $NdoPID > /dev/null 2>&1; then
+return 0
+else
+return 1
+fi
+return 1
+}
+printstatus_ndo()
+{
+if status_ndo $1 $2; then
+echo "ndo (pid $NdoPID) is running..."
+else
+echo "ndo is not running"
+fi
+}
+killproc_ndo ()
+{
+echo "kill $2 $NdoPID"
+kill $2 $NdoPID
+}
+pid_ndo ()
+{
+if test ! -f $NdoRunFile; then
+echo "No lock file found in $NdoRunFile"
+echo -n " checking runing process..."
+NdoPID=`ps h -C ndo2db -o pid`
+if [ -z "$NdoPID" ]; then
+echo " No ndo2db process found"
+exit 1
+else
+echo " found process pid: $NdoPID"
+echo -n " reinit $NdoRunFile ..."
+touch $NdoRunFile
+chown $NdoUser:$NdoGroup $NdoRunFile
+echo "$NdoPID" > $NdoRunFile
+echo " done"
+fi
+fi
+NdoPID=`head $NdoRunFile`
+}
+#Source function library
+# Solaris doesn't have an rc.d directory, so do a test first
+if [ -f /etc/rc.d/init.d/functions ]; then
+. /etc/rc.d/init.d/functions
+elif [ -f /etc/init.d/functions ]; then
+. /etc/init.d/functions
+fi
+prefix=/usr/local/nagios
+exec_prefix=${prefix}
+NdoBin=${exec_prefix}/bin/ndo2db
+NdoCfgFile=${prefix}/etc/ndo2db.cfg
+NdoRunFile=${prefix}/var/ndo2db.run
+NdoLockDir=/var/lock/subsys
+NdoLockFile=ndo2db.lock
+NdoUser=nagios
+NdoGroup=nagios
 
+#Check that ndo exists.
+if [ ! -f $NdoBin ]; then
+echo "Executable file $NdoBin not found. Exiting."
+exit 1
+fi
+# Check that ndo.cfg exists.
+if [ ! -f $NdoCfgFile ]; then
+echo "Configuration file $NdoCfgFile not found. Exiting."
+exit 1
+fi
+# See how we were called.
+case "$1" in
+start)
+echo -n "Starting ndo:"
+touch $NdoRunFile
+
+chown $NdoUser:$NdoGroup $NdoRunFile
+$NdoBin -c $NdoCfgFile
+if [ -d $NdoLockDir ]; then
+touch $NdoLockDir/$NdoLockFile;
+fi
+ps h -C ndo2db -o pid > $NdoRunFile
+if [ $? -eq 0 ]; then
+echo " done."
+exit 0
+else
+echo " failed."
+$0 stop
+exit 1
+fi
+;;
+stop)
+echo -n "Stopping ndo: "
+pid_ndo
+killproc_ndo
+# now we have to wait for ndo to exit and remove its
+# own NdoRunFile, otherwise a following "start" could
+# happen, and then the exiting ndo will remove the
+# new NdoRunFile, allowing multiple ndo daemons
+# to (sooner or later) run
+# echo -n 'Waiting for ndo to exit .'
+for i in 1 2 3 4 5 6 7 8 9 10 ; do
+if status_ndo > /dev/null; then
+echo -n '.'
+sleep 1
+else
+break
+fi
+done
+if status_ndo > /dev/null; then
+echo
+echo 'Warning - ndo did not exit in a timely manner'
+else
+echo 'done.'
+fi
+rm -f $NdoRunFile $NdoLockDir/$NdoLockFile
+;;
+status)
+pid_ndo
+printstatus_ndo ndo
+;;
+restart)
+$0 stop
+$0 start
+;;
+*)
+echo "Usage: ndo {start|stop|restart|status}"
+exit 1
+;;
+esac
+# End of this script
+
+```
 
 ```bash
 sudo update-rc.d ndo2db defaults
@@ -264,9 +409,16 @@ Accéder au fichier:
 sudo nano /etc/init.d/nagios
 ```
 
-Aj
+## Ajouter le contenu spécifié, rendre le fichier exécutable et démarrer Nagios:
 
-outer le contenu spécifié, rendre le fichier exécutable et démarrer Nagios:
+```
+DESC="Nagios"
+NAME=nagios
+DAEMON=/usr/local/nagios/bin/$NAME
+DAEMON_ARGS=".d /usr/local/nagios/etc/nagios.cfg"
+PIDFILE=/usr/local/nagios/var/$NAME.lock
+```
+
 
 ```bash
 sudo chmod +x /etc/init.d/nagios
@@ -281,7 +433,31 @@ cd /usr/local/nagios/etc/servers
 sudo nano hosts.cfg
 ```
 
-Ajouter le contenu spécifié et redémarrer Nagios:
+## Ajouter le contenu spécifié et redémarrer Nagios:
+
+```
+define host{
+	use			linux-server
+	host_name		laptop_windows
+	alias			My Windows Server
+	address			192.168.11.106
+	max_check_attempts	5
+	check_period		24x7
+	notification_interval	30
+	notification_period	24x7
+}
+define host{
+	use			linux-server
+	host_name		Iphone
+	alias			My Iphone
+	address			192.168.11.105
+	max_check_attempts	5
+	check_period		24x7
+	notification_interval	30
+	notification_period	24x7
+}
+```
+
 
 ```bash
 sudo service nagios restart
@@ -320,6 +496,35 @@ Redémarrer Nagios sur Ubuntu:
 ```bash
 sudo systemctl restart nagios.service
 ```
+
+------------------------------------------------------------------------------------
+
+2-2 Configuration du client NSclient sur windows [6]
+
+1- Monitoring windows de windows
+
+Installer NSClient++ Nagios core Agent sur windows : https://nsclient.org/
+
+2. Configuration de Nagios
+ on édit le fichier nagios.cfg
+```
+sudo nano /usr/local/nagios/etc/nagios.cfg
+```
+décommenter la ligne:
+
+
+#cfg_file=/usr/local/nagios/etc/objects/windows.cfg
+Modifier mettre l'adresse IP  du serveur nagios :
+```
+define host{
+	use		windows-server	; Inherit default values from a Windows server template (make sure you keep this line!)
+	host_name		winserver
+	alias		My Windows Server
+	address		192.168.11.106
+	}
+```
+
+Redémarrage du système:
 
 
 
