@@ -364,7 +364,29 @@ Le daemon ndo2db est prêt.
 sudo nano /usr/local/nagios/etc/nagios.cfg
 ```
 
-Décommenter la ligne spécifiée.
+## Décommenter la ligne spécifiée.
+
+```
+# Definitions for monitoring a Windows machine
+cfg_file=/usr/local/nagios/etc/objects/windows.cfg
+
+# Definitions for monitoring a router/switch
+#cfg_file=/usr/local/nagios/etc/objects/switch.cfg
+
+# Definitions for monitoring a network printer
+cfg_file=/usr/local/nagios/etc/objects/printer.cfg
+
+
+# You can also tell Nagios to process all config files (with a .cfg
+# extension) in a particular directory by using the cfg_dir
+# directive as shown below:
+
+cfg_dir=/usr/local/nagios/etc/servers
+#cfg_dir=/usr/local/nagios/etc/printers
+#cfg_dir=/usr/local/nagios/etc/switches
+#cfg_dir=/usr/local/nagios/etc/routers
+```
+
 
 2. Créer un fichier "servers":
 
