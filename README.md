@@ -167,7 +167,7 @@ htpasswd /usr/local/nagios/etc/htpasswd.users nagios
 
 ## Étape 7 : Vérification de l'installation et changement des droits utilisateurs
 ```bash
-sudo chown -R nagios:nagios /usr/local/nagios
+sudo chown -R nagios:nagcmd /usr/local/nagios
 sudo chmod -R 775 /usr/local/nagios
 sudo chown -R nagios:www-data /usr/local/nagios/etc
 sudo chmod -R 775 /usr/local/nagios/etc
