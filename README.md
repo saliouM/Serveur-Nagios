@@ -181,8 +181,7 @@ cd ..
 sudo wget http://prdownloads.sourceforge.net/sourceforge/nagios/ndoutils-2.0.0.tar.gz
 sudo tar xvzf ndoutils-2.0.0.tar.gz
 cd ndoutils-2.0.0
-sudo ./configure --prefix=/usr/local/nagios/ --enable-mysql --disable-pgsql \\
---with-ndo2db-user=nagios --with-ndo2db-group=nagcmd
+sudo ./configure --prefix=/usr/local/nagios/ --enable-mysql --disable-pgsql
 sudo make
 sudo make all
 sudo cp ./src/ndomod-3x.o /usr/local/nagios/bin/ndomod.o
